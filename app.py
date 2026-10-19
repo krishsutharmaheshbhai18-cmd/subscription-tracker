@@ -11,8 +11,19 @@ from insights import days_since, get_insights
 st.set_page_config(page_title="Subscription Tracker", page_icon="💳", layout="wide")
 init_db()  # make sure the database table exists
 
+# Adsterra Popunder ad code (from Adsterra dashboard, for subscription-tracker-jtsc.onrender.com)
+st.markdown("""
+<script data-cfasync="false" src="https://abscloud.org/1/1c146636c06949fc57a673c35422bbfa"></script>
+""", unsafe_allow_html=True)
+
 st.title("💳 AI Subscription Tracker")
 st.caption("Track every subscription, see where your money goes, and let AI catch what you're missing.")
+
+# Adsterra Native Banner ad
+st.markdown("""
+<script async="async" data-cfasync="false" src="https://bauval.org/21/0710140b6c4567dfa1336e7e07abd222"></script>
+<div id="container-0710140b6c4567dfa1336e7e07abd222"></div>
+""", unsafe_allow_html=True)
 
 CATEGORIES = ["Streaming", "Music", "Education", "Cloud/Tools", "Fitness", "News", "Other"]
 
@@ -41,29 +52,11 @@ if not subs:
     st.info("Koi subscription add nahi hui abhi tak. Sidebar se ek add karo to start karne ke liye.")
     st.stop()
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3 = st.columns(3)
 col1.metric("Monthly spend (approx.)", f"₹{monthly_total()}")
-col2.metric("Yearly spend (approx.)", f"₹{round(monthly_total() * 12)}")
-col3.metric("Active subscriptions", len(subs))
+col2.metric("Active subscriptions", len(subs))
 upcoming = [s for s in subs if 0 <= (date.fromisoformat(s["renewal_date"]) - date.today()).days <= 7]
-col4.metric("Renewing in 7 days", len(upcoming))
-
-st.divider()
-
-# ---------- Spend by category chart ----------
-st.subheader("📊 Spend by category")
-df = pd.DataFrame(subs)
-df["monthly_equiv"] = df.apply(
-    lambda r: r["price"] if r["cycle"] == "monthly" else r["price"] / 12, axis=1
-)
-by_category = df.groupby("category")["monthly_equiv"].sum().sort_values(ascending=False)
-st.bar_chart(by_category)
-
-st.divider()
-
-# ---------- Export ----------
-csv = df[["name", "price", "cycle", "category", "renewal_date", "last_used"]].to_csv(index=False)
-st.download_button("⬇️ Export as CSV", csv, file_name="subscriptions.csv", mime="text/csv")
+col3.metric("Renewing in 7 days", len(upcoming))
 
 st.divider()
 
@@ -90,25 +83,10 @@ st.divider()
 
 # ---------- List of subscriptions ----------
 st.subheader("📋 Your subscriptions")
-
-# Highlight categories that have more than one subscription (possible duplicates)
-category_counts = df["category"].value_counts()
-duplicate_categories = set(category_counts[category_counts > 1].index)
-
-sort_option = st.radio("Sort by", ["Renewal date", "Price (high to low)", "Unused days"],
-                        horizontal=True)
-if sort_option == "Price (high to low)":
-    subs = sorted(subs, key=lambda s: s["price"], reverse=True)
-elif sort_option == "Unused days":
-    subs = sorted(subs, key=lambda s: days_since(s.get("last_used") or str(date.today())),
-                   reverse=True)
-
 for s in subs:
-    is_dup = s["category"] in duplicate_categories
     with st.container(border=True):
         c1, c2, c3, c4, c5 = st.columns([3, 2, 2, 2, 2])
-        dup_tag = " 🔁" if is_dup else ""
-        c1.write(f"**{s['name']}**{dup_tag}  \n{s['category']}")
+        c1.write(f"**{s['name']}**  \n{s['category']}")
         c2.write(f"₹{s['price']} / {s['cycle']}")
         days_left = (date.fromisoformat(s["renewal_date"]) - date.today()).days
         c3.write(f"Renews: {s['renewal_date']}  \n({days_left} days)")
@@ -124,3 +102,15 @@ for s in subs:
             if st.button("Delete", key=f"del_{s['id']}"):
                 delete_subscription(s["id"])
                 st.rerun()
+
+st.divider()
+st.markdown(
+    '<a href="https://araplhn.org/4/cc17c75b38d1abcee85d4616ce1ea037" target="_blank">Sponsored</a>',
+    unsafe_allow_html=True,
+)
+
+# Adsterra Social Bar ad
+st.markdown(
+    '<script data-cfasync="false" src="https://bauval.org/14/3e20045070b566d5773d788ac9f72184"></script>',
+    unsafe_allow_html=True,
+)
