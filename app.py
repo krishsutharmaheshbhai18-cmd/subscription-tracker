@@ -3,6 +3,7 @@ from datetime import date, timedelta
 
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 from db import (add_subscription, delete_subscription, get_all,
                  init_db, mark_used_today, monthly_total)
@@ -11,19 +12,18 @@ from insights import days_since, get_insights
 st.set_page_config(page_title="Subscription Tracker", page_icon="💳", layout="wide")
 init_db()  # make sure the database table exists
 
-# Adsterra Popunder ad code (from Adsterra dashboard, for subscription-tracker-jtsc.onrender.com)
-st.markdown("""
-<script data-cfasync="false" src="https://abscloud.org/1/1c146636c06949fc57a673c35422bbfa"></script>
-""", unsafe_allow_html=True)
-
 st.title("💳 AI Subscription Tracker")
 st.caption("Track every subscription, see where your money goes, and let AI catch what you're missing.")
 
-# Adsterra Native Banner ad
-st.markdown("""
-<script async="async" data-cfasync="false" src="https://bauval.org/21/0710140b6c4567dfa1336e7e07abd222"></script>
-<div id="container-0710140b6c4567dfa1336e7e07abd222"></div>
-""", unsafe_allow_html=True)
+# ---------- Ads (rendered inside an iframe so the scripts actually run) ----------
+# Native Banner
+components.html(
+    """
+    <script async="async" data-cfasync="false" src="https://bauval.org/21/0710140b6c4567dfa1336e7e07abd222"></script>
+    <div id="container-0710140b6c4567dfa1336e7e07abd222"></div>
+    """,
+    height=260,
+)
 
 CATEGORIES = ["Streaming", "Music", "Education", "Cloud/Tools", "Fitness", "News", "Other"]
 
@@ -44,6 +44,8 @@ with st.sidebar:
                 add_subscription(name.strip(), price, cycle, category, str(renewal_date))
                 st.success(f"Added {name}!")
                 st.rerun()
+
+    st.caption("ℹ️ Demo app: please don't enter real or sensitive data.")
 
 # ---------- Main: dashboard ----------
 subs = get_all()
@@ -104,13 +106,18 @@ for s in subs:
                 st.rerun()
 
 st.divider()
-st.markdown(
-    '<a href="https://araplhn.org/4/cc17c75b38d1abcee85d4616ce1ea037" target="_blank">Sponsored</a>',
-    unsafe_allow_html=True,
+
+# ---------- Export ----------
+csv_data = pd.DataFrame(subs).to_csv(index=False).encode("utf-8")
+st.download_button(
+    "⬇️ Download as CSV",
+    data=csv_data,
+    file_name="subscriptions.csv",
+    mime="text/csv",
 )
 
-# Adsterra Social Bar ad
+# ---------- Sponsored link ----------
 st.markdown(
-    '<script data-cfasync="false" src="https://bauval.org/14/3e20045070b566d5773d788ac9f72184"></script>',
+    '<a href="https://araplhn.org/4/cc17c75b38d1abcee85d4616ce1ea037" target="_blank">Sponsored</a>',
     unsafe_allow_html=True,
 )
